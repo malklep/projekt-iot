@@ -2,6 +2,8 @@ from config import Config
 import asyncio
 from agent import Agent
 from asyncua import Client
+from device import Device
+
 
 async def main():
     config = Config('config.ini')
@@ -14,10 +16,10 @@ async def main():
             child_name = await child.read_browse_name()
             if child_name.Name != 'Server':
                 connection_string = config.get_device_config(child_name.Name)
-                agents.append(Agent.init(device = child, connection_string = connection_string))
-
-        print(agents)
-    
+                agents.append(Agent.init(
+                    device=Device.init(device=child, client=client),
+                    connection_string=connection_string
+                ))
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
