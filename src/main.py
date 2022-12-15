@@ -16,10 +16,17 @@ async def main():
             child_name = await child.read_browse_name()
             if child_name.Name != 'Server':
                 connection_string = config.get_device_config(child_name.Name)
-                agents.append(Agent.init(
+                agent = Agent.init(
                     device=Device.init(device=child, client=client),
                     connection_string=connection_string
-                ))
+                )
+
+                agents.append(agent)
+
+        while True:
+            for agent in agents:
+                await asyncio.gather(*agent.tasks)
+            await asyncio.sleep(1)
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
