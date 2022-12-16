@@ -9,6 +9,8 @@ async def main():
     config = Config('config.ini')
 
     agents = []
+    subscriptions = []
+
     async with Client(config.server_url) as client:
         objects = client.get_node('i=85')
 
@@ -21,7 +23,11 @@ async def main():
                     connection_string=connection_string
                 )
 
+                subscription = await client.create_subscription(500, agent)
+                await subscription.subscribe_data_change(await agent.subscribed_properties)
+
                 agents.append(agent)
+                subscriptions.append(subscription)
 
         while True:
             for agent in agents:

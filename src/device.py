@@ -17,17 +17,32 @@ class DeviceMethod(Enum):
     ResetErrorStatus = "ResetErrorStatus"
 
 
+class DeviceError(Enum):
+    EmergencyStop = 1
+    PowerFailure = 2
+    SensorFailure = 4
+    Unknown = 8
+
+    @classmethod
+    def errors(cls, code: int):
+        for e in cls:
+            if code & e.value:
+                yield e
+
+
 class Device:
-    def __init__(self):
-        self.device = None
-        self.client = None
+    def __init__(self, device, client):
+        self.device = device
+        self.client = client
+
+    @property
+    async def name(self):
+        device_name = await self.device.read_browse_name()
+        return device_name.Name
 
     @classmethod
     def init(cls, device, client):
-        self = cls()
-        self.device = device
-        self.client = client
-        return self
+        return cls(device, client)
 
     async def get_property_node(self, prop: DeviceProperty):
         return await self.device.get_child(f"0:{prop.value}")

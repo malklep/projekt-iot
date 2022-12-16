@@ -4,7 +4,7 @@ from json import dumps
 from datetime import datetime
 
 from azure.iot.device import IoTHubDeviceClient, Message, MethodRequest, MethodResponse
-from device import DeviceProperty, DeviceMethod
+from device import DeviceProperty, DeviceMethod, DeviceError
 from asyncua.ua import Variant, VariantType
 
 
@@ -23,13 +23,14 @@ class Agent:
         self.client.on_twin_desired_properties_patch_received = self.twin_update_handler
 
         self._tasks = []
+        self._errors = []
         self.message_index = 0
 
     @property
     async def subscribed_properties(self):
         return [
-            await self.device.get_node(DeviceProperty.ProductionRate),
-            await self.device.get_node(DeviceProperty.DeviceError)
+            await self.device.get_property_node(DeviceProperty.ProductionRate),
+            await self.device.get_property_node(DeviceProperty.DeviceError)
         ]
 
     @property
@@ -84,3 +85,22 @@ class Agent:
                 prop=DeviceProperty.ProductionRate,
                 value=Variant(data["production_rate"], VariantType.Int32)
             ))
+
+    # asyncua callback
+    async def datachange_notification(self, node, val, _):
+        name = await node.read_browse_name()
+        print(f"Zmiana wartości {name.Name} dla {await self.device.name} na: {val}")
+        if name.Name == DeviceProperty.DeviceError.value:
+            errors = DeviceError.errors(val)
+            for error in errors:
+                if error not in self._errors:
+                    self.client.patch_twin_reported_properties({"last_error_date": datetime.now().isoformat()})
+                    self.send_message({"device_error": error.value}, MessageType.EVENT)
+
+            self._errors = errors
+            self.client.patch_twin_reported_properties({"device_error": val})
+        elif name.Name == DeviceProperty.ProductionRate.value:
+            self.client.patch_twin_reported_properties({"production_rate": val})
+
+    def disconnect(self):
+        self.client.disconnect()
