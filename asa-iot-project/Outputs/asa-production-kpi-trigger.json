@@ -1,0 +1,13 @@
+{
+    "Name": "asa-production-kpi-trigger",
+    "DataSourceType": "Azure Function",
+    "AzureFunctionProperties": {
+        "FunctionAppName": "uni-iot-function-app",
+        "FunctionName": "ProductionKpiTrigger",
+        "ApiKey": null,
+        "MaxBatchSize": 262144,
+        "MaxBatchCount": 100
+    },
+    "DataSourceCredentialDomain": null,
+    "ScriptType": "Output"
+}

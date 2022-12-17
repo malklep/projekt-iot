@@ -1,0 +1,13 @@
+{
+    "Name": "asa-emergency-stop-trigger",
+    "DataSourceType": "Azure Function",
+    "AzureFunctionProperties": {
+        "FunctionAppName": "uni-iot-function-app",
+        "FunctionName": "EmergencyStopTrigger",
+        "ApiKey": null,
+        "MaxBatchSize": 262144,
+        "MaxBatchCount": 100
+    },
+    "DataSourceCredentialDomain": null,
+    "ScriptType": "Output"
+}
