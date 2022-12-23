@@ -56,14 +56,14 @@ class Agent:
         print(data)
         self.send_message(data, MessageType.TELEMETRY)
 
-    def send_message(self, data, message_type: MessageType):
+    def send_message(self, data: dict, message_type: MessageType):
+        data['message_type'] = message_type.value
         message = Message(
             data=dumps(data),
             message_id=self.message_index,
             content_type='application/json',
             content_encoding='utf-8'
         )
-        message.custom_properties['message_type'] = message_type.value
         self.client.send_message(message)
 
     def method_handler(self, method: MethodRequest):
